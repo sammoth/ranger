@@ -17,6 +17,7 @@ import errno
 import fcntl
 import imghdr
 import os
+import io
 import struct
 import sys
 import warnings
@@ -626,10 +627,10 @@ class KittyImageDisplayerThread(threading.Thread, FileManagerAware):
             # f: size of a pixel fragment (8bytes per color)
             # s, v: size of the image to recompose the flattened data
             # c, r: size in cells of the viewbox
-            cmds.update({'t': 'd', 'f': len(image.getbands()) * 8,
-                         's': image.width, 'v': image.height, })
-            payload = base64.standard_b64encode(
-                bytearray().join(map(bytes, image.getdata())))
+            cmds.update({'t': 'd', 'f': 100, })
+            b = io.BytesIO()
+            image.save(b, format='png', compress_level=4)
+            payload = base64.standard_b64encode(b.getvalue())
         else:
             # put the image in a temporary png file
             # t: transmissium medium, 't' for temporary file (kitty will delete it for us)
