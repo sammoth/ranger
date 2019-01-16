@@ -670,6 +670,7 @@ class KittyImageDisplayerThread(threading.Thread, FileManagerAware):
         # kitty doesn't seem to reply on deletes, checking like we do in draw()
         # will slows down scrolling with timeouts from select
         self.image_id -= 1
+        self.fm.ui.win.redrawwin()
 
     def _format_cmd_str(self, cmd, payload=None, max_slice_len=2048):
         central_blk = ','.join(["{}={}".format(k, v) for k, v in cmd.items()]).encode('ascii')
