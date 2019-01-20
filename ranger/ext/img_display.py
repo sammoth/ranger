@@ -648,14 +648,6 @@ class KittyImageDisplayerThread(threading.Thread, FileManagerAware):
 
         with temporarily_moved_cursor(int(start_y), int(start_x)):
             for cmd_str in self._format_cmd_str(cmds, payload=payload):
-                if self.stop_draw.is_set():
-                    for end_cmd_str in self._format_cmd_str(cmds, end_early=True):
-                        self.stdbout.write(end_cmd_str)
-                        resp = b''
-                        while resp[-2:] != self.protocol_end:
-                            resp += self.stdbin.read(1)
-                    self.clear(start_x, start_y, width, height)
-                    return
                 self.stdbout.write(cmd_str)
 
         # catch kitty answer before the escape codes corrupt the console
@@ -680,12 +672,12 @@ class KittyImageDisplayerThread(threading.Thread, FileManagerAware):
         self.image_id -= 1
         self.fm.ui.win.redrawwin()
 
-    def _format_cmd_str(self, cmd, payload=None, max_slice_len=2048, end_early=False):
+    def _format_cmd_str(self, cmd, payload=None, max_slice_len=2048):
         central_blk = ','.join(["{}={}".format(k, v) for k, v in cmd.items()]).encode('ascii')
         if payload is not None:
             # we add the m key to signal a multiframe communication
             # appending the end (m=0) key to a single message has no effect
-            while len(payload) > max_slice_len and not end_early:
+            while len(payload) > max_slice_len:
                 payload_blk, payload = payload[:max_slice_len], payload[max_slice_len:]
                 yield self.protocol_start + \
                     central_blk + b',m=1;' + payload_blk + \
